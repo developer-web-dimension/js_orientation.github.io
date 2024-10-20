@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -66,6 +66,113 @@
         }
 
         // Call the function on page load
+        requestOrientationPermission();
+    </script>
+</body>
+</html>
+ -->
+
+
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Device Orientation with A-Frame</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .data {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 1.2em;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="data">
+        <p>Alpha: <span id="alpha">0</span></p>
+        <p>Beta: <span id="beta">0</span></p>
+        <p>Gamma: <span id="gamma">0</span></p>
+    </div>
+
+    <a-scene embedded>
+        <a-entity id="camera" camera ></a-entity>
+        
+        <!-- Blue ring that moves based on orientation -->
+        <a-ring id="blueRing" color="#88f9fb" radius-inner="0.12" radius-outer="0.2" position="0 1 -2"></a-ring>
+        
+        <!-- A floor to give a better sense of space -->
+        <a-plane rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane>
+        
+        <!-- Light for the scene -->
+        <a-light type="ambient" color="#888"></a-light>
+    </a-scene>
+
+    <script>
+        const alphaDisplay = document.getElementById('alpha');
+        const betaDisplay = document.getElementById('beta');
+        const gammaDisplay = document.getElementById('gamma');
+        const blueRing = document.getElementById('blueRing');
+        const scene = document.querySelector('a-scene');
+        
+        let ringPosition = { x: 0, y: 1, z: -2 }; // Initial position of the ring
+
+        function updateOrientation(event) {
+            const alpha = event.alpha;
+            const beta = event.beta;
+            const gamma = event.gamma;
+
+            // Update displayed values
+            alphaDisplay.textContent = alpha.toFixed(2);
+            betaDisplay.textContent = beta.toFixed(2);
+            gammaDisplay.textContent = gamma.toFixed(2);
+
+            // Use orientation data to move the blue ring
+            // Map the orientation values to x, y, z positions (simple mapping, can be adjusted)
+            ringPosition.x = (gamma / 90) * 2;  // Gamma (left/right tilt)
+            ringPosition.y = (beta / 90) * 2;   // Beta (up/down tilt)
+            ringPosition.z = -(alpha / 360) * 4; // Alpha (rotation, compass direction)
+
+            blueRing.setAttribute('position', `${ringPosition.x} ${ringPosition.y} ${ringPosition.z}`);
+        }
+
+        function requestOrientationPermission() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('deviceorientation', updateOrientation);
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', updateOrientation);
+            }
+        }
+
+        // Add box at ring's current position when screen is clicked
+        scene.addEventListener('click', () => {
+            const box = document.createElement('a-box');
+            box.setAttribute('position', `${ringPosition.x} ${ringPosition.y} ${ringPosition.z}`);
+            box.setAttribute('depth', '0.5');
+            box.setAttribute('height', '0.5');
+            box.setAttribute('width', '0.5');
+            box.setAttribute('color', 'red');
+            scene.appendChild(box);
+        });
+
+        // Request orientation permission on iOS if needed
         requestOrientationPermission();
     </script>
 </body>
