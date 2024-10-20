@@ -1,179 +1,104 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Device Orientation</title>
+    <title>AR Orientation Experience</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        body {
+        #orientationData {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
+            z-index: 1000;
         }
-        .data {
-            font-size: 1.5em;
-            margin: 20px;
-        }
-        button {
+        #requestPermission {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
             padding: 10px 20px;
             font-size: 1em;
         }
     </style>
 </head>
-<body>
-    <h1>Device Orientation</h1>
-    <div class="data">
+<body style="margin: 0; overflow: hidden;">
+    <div id="orientationData">
         <p>Alpha: <span id="alpha">0</span></p>
         <p>Beta: <span id="beta">0</span></p>
         <p>Gamma: <span id="gamma">0</span></p>
     </div>
     <button id="requestPermission" style="display:none;">Request Orientation Permission</button>
 
-    <script>
-        const alphaDisplay = document.getElementById('alpha');
-        const betaDisplay = document.getElementById('beta');
-        const gammaDisplay = document.getElementById('gamma');
-        const permissionButton = document.getElementById('requestPermission');
-
-        function updateOrientation(event) {
-            const alpha = event.alpha.toFixed(2);
-            const beta = event.beta.toFixed(2);
-            const gamma = event.gamma.toFixed(2);
-
-            alphaDisplay.textContent = alpha;
-            betaDisplay.textContent = beta;
-            gammaDisplay.textContent = gamma;
-        }
-
-        function requestOrientationPermission() {
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                // iOS 13+ requires permission to access orientation data
-                permissionButton.style.display = 'block';
-                permissionButton.addEventListener('click', function() {
-                    DeviceOrientationEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                window.addEventListener('deviceorientation', updateOrientation);
-                                permissionButton.style.display = 'none'; // Hide button after permission is granted
-                            }
-                        })
-                        .catch(console.error);
-                });
-            } else {
-                // For Android or browsers that don't require permission
-                window.addEventListener('deviceorientation', updateOrientation);
-            }
-        }
-
-        // Call the function on page load
-        requestOrientationPermission();
-    </script>
-</body>
-</html>
- -->
-
-
-
-
- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Device Orientation with A-Frame</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-        .data {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-size: 1.2em;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="data">
-        <p>Alpha: <span id="alpha">0</span></p>
-        <p>Beta: <span id="beta">0</span></p>
-        <p>Gamma: <span id="gamma">0</span></p>
-    </div>
-
-    <a-scene embedded>
-        <a-entity id="camera" camera ></a-entity>
-        
-        <!-- Blue ring that moves based on orientation -->
-        <a-ring id="blueRing" color="#88f9fb" radius-inner="0.12" radius-outer="0.2" position="0 1 -2"></a-ring>
-        
-        <!-- A floor to give a better sense of space -->
-        <a-plane rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane>
-        
-        <!-- Light for the scene -->
-        <a-light type="ambient" color="#888"></a-light>
+    <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;' vr-mode-ui="enabled: false">
+        <a-marker preset="hiro">
+            <a-entity id="ring" geometry="primitive: torus; radius: 0.5; radiusTubular: 0.01" 
+                      material="color: blue; opacity: 0.7" position="0 0.5 0"></a-entity>
+        </a-marker>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
         const alphaDisplay = document.getElementById('alpha');
         const betaDisplay = document.getElementById('beta');
         const gammaDisplay = document.getElementById('gamma');
-        const blueRing = document.getElementById('blueRing');
+        const permissionButton = document.getElementById('requestPermission');
+        const ring = document.getElementById('ring');
         const scene = document.querySelector('a-scene');
-        
-        let ringPosition = { x: 0, y: 1, z: -2 }; // Initial position of the ring
+        let boxCount = 0;
 
         function updateOrientation(event) {
-            const alpha = event.alpha;
-            const beta = event.beta;
-            const gamma = event.gamma;
+            const alpha = event.alpha.toFixed(2);
+            const beta = event.beta.toFixed(2);
+            const gamma = event.gamma.toFixed(2);
+            
+            alphaDisplay.textContent = alpha;
+            betaDisplay.textContent = beta;
+            gammaDisplay.textContent = gamma;
 
-            // Update displayed values
-            alphaDisplay.textContent = alpha.toFixed(2);
-            betaDisplay.textContent = beta.toFixed(2);
-            gammaDisplay.textContent = gamma.toFixed(2);
-
-            // Use orientation data to move the blue ring
-            // Map the orientation values to x, y, z positions (simple mapping, can be adjusted)
-            ringPosition.x = (gamma / 90) * 2;  // Gamma (left/right tilt)
-            ringPosition.y = (beta / 90) * 2;   // Beta (up/down tilt)
-            ringPosition.z = -(alpha / 360) * 4; // Alpha (rotation, compass direction)
-
-            blueRing.setAttribute('position', `${ringPosition.x} ${ringPosition.y} ${ringPosition.z}`);
+            // Update ring position based on orientation
+            const x = (gamma / 90) * 0.5;
+            const y = 0.5 + (-beta / 90) * 0.5;
+            ring.setAttribute('position', `${x} ${y} 0`);
         }
 
         function requestOrientationPermission() {
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', updateOrientation);
-                        }
-                    })
-                    .catch(console.error);
+                permissionButton.style.display = 'block';
+                permissionButton.addEventListener('click', function() {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', updateOrientation);
+                                permissionButton.style.display = 'none';
+                            }
+                        })
+                        .catch(console.error);
+                });
             } else {
                 window.addEventListener('deviceorientation', updateOrientation);
             }
         }
 
-        // Add box at ring's current position when screen is clicked
-        scene.addEventListener('click', () => {
+        function dropBox(event) {
+            const ringPosition = ring.getAttribute('position');
             const box = document.createElement('a-box');
-            box.setAttribute('position', `${ringPosition.x} ${ringPosition.y} ${ringPosition.z}`);
-            box.setAttribute('depth', '0.5');
-            box.setAttribute('height', '0.5');
-            box.setAttribute('width', '0.5');
-            box.setAttribute('color', 'red');
-            scene.appendChild(box);
-        });
+            box.setAttribute('position', ringPosition);
+            box.setAttribute('color', `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`);
+            box.setAttribute('scale', '0.1 0.1 0.1');
+            document.querySelector('a-marker').appendChild(box);
+            boxCount++;
+            box.setAttribute('id', `box-${boxCount}`);
+        }
 
-        // Request orientation permission on iOS if needed
+        scene.addEventListener('click', dropBox);
         requestOrientationPermission();
     </script>
 </body>
-</html>
+</html> 
