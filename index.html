@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Orientation Experience</title>
+    <title>Dynamic AR Orientation Experience</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
@@ -36,11 +36,9 @@
     </div>
     <button id="requestPermission" style="display:none;">Request Orientation Permission</button>
 
-    <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;' vr-mode-ui="enabled: false">
-        <a-marker preset="hiro">
-            <a-entity id="ring" geometry="primitive: torus; radius: 0.5; radiusTubular: 0.01" 
-                      material="color: blue; opacity: 0.7" position="0 0.5 0"></a-entity>
-        </a-marker>
+    <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;' vr-mode-ui="enabled: false">
+        <a-entity id="ring" geometry="primitive: torus; radius: 0.5; radiusTubular: 0.01" 
+                  material="color: #88f9fb; opacity: 0.7" position="0 0 -1"></a-entity>
         <a-entity camera></a-entity>
     </a-scene>
 
@@ -54,18 +52,18 @@
         let boxCount = 0;
 
         function updateOrientation(event) {
-            const alpha = event.alpha.toFixed(2);
-            const beta = event.beta.toFixed(2);
-            const gamma = event.gamma.toFixed(2);
+            const alpha = event.alpha ? event.alpha.toFixed(2) : '0';
+            const beta = event.beta ? event.beta.toFixed(2) : '0';
+            const gamma = event.gamma ? event.gamma.toFixed(2) : '0';
             
             alphaDisplay.textContent = alpha;
             betaDisplay.textContent = beta;
             gammaDisplay.textContent = gamma;
 
             // Update ring position based on orientation
-            const x = (gamma / 90) * 0.5;
-            const y = 0.5 + (-beta / 90) * 0.5;
-            ring.setAttribute('position', `${x} ${y} 0`);
+            const x = event.gamma ? (event.gamma / 90) * 0.5 : 0;
+            const y = event.beta ? (-event.beta / 90) * 0.5 : 0;
+            ring.setAttribute('position', `${x} ${y} -1`);
         }
 
         function requestOrientationPermission() {
@@ -92,7 +90,7 @@
             box.setAttribute('position', ringPosition);
             box.setAttribute('color', `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`);
             box.setAttribute('scale', '0.1 0.1 0.1');
-            document.querySelector('a-marker').appendChild(box);
+            scene.appendChild(box);
             boxCount++;
             box.setAttribute('id', `box-${boxCount}`);
         }
@@ -101,4 +99,4 @@
         requestOrientationPermission();
     </script>
 </body>
-</html> 
+</html>
