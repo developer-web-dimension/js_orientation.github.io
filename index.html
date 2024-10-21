@@ -85,11 +85,15 @@
             const x = event.gamma ? (event.gamma / 90) * 0.5 : 0;
             const y = event.beta ? (-event.beta / 90) * 0.5 : 0;
 
-            // Adjust z-position to move forward when phone rotates upwards (beta)
-            const z = -1 + (event.beta ? (event.beta / 90) * 0.5 : 0);
+            // Map beta (7.30 to 68.60) to a forward movement in z-axis
+            const z = -1 - (event.beta - 7.30) / (68.60 - 7.30);  // Moves forward as beta increases
 
-            // Update ring's position with new x, y, z values
+            // Calculate scale to make the ring appear smaller as it moves further
+            const scale = 1 - (event.beta - 7.30) / (68.60 - 7.30) * 0.5;  // Shrinks the ring
+
+            // Update ring's position and scale
             ring.setAttribute('position', `${x} ${y} ${z}`);
+            ring.setAttribute('scale', `${scale} ${scale} ${scale}`);
         }
 
 
