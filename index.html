@@ -70,11 +70,21 @@
         //     betaDisplay.textContent = beta;
         //     gammaDisplay.textContent = gamma;
 
-        //     // Update ring position based on orientation
+        //     // Calculate ring position based on orientation
         //     const x = event.gamma ? (event.gamma / 90) * 0.5 : 0;
         //     const y = event.beta ? (-event.beta / 90) * 0.5 : 0;
-        //     ring.setAttribute('position', `${x} ${y} -1`);
+
+        //     // Map beta (7.30 to 68.60) to a forward movement in z-axis
+        //     const z = -1 - (event.beta - 7.30) / (68.60 - 7.30);  // Moves forward as beta increases
+
+        //     // Calculate scale to make the ring appear smaller as it moves further
+        //     const scale = 1 - (event.beta - 7.30) / (68.60 - 7.30) * 0.5;  // Shrinks the ring
+
+        //     // Update ring's position and scale
+        //     ring.setAttribute('position', `${x} ${y} ${z}`);
+        //     ring.setAttribute('scale', `${scale} ${scale} ${scale}`);
         // }
+
         function updateOrientation(event) {
             const alpha = event.alpha ? event.alpha.toFixed(2) : '0';
             const beta = event.beta ? event.beta.toFixed(2) : '0';
@@ -84,20 +94,29 @@
             betaDisplay.textContent = beta;
             gammaDisplay.textContent = gamma;
 
+            // Remove ring if beta crosses 85
+            if (event.beta > 85) {
+                ring.setAttribute('visible', 'false');
+                return;  // Stop updating when the ring is removed
+            } else {
+                ring.setAttribute('visible', 'true');
+            }
+
             // Calculate ring position based on orientation
             const x = event.gamma ? (event.gamma / 90) * 0.5 : 0;
             const y = event.beta ? (-event.beta / 90) * 0.5 : 0;
 
             // Map beta (7.30 to 68.60) to a forward movement in z-axis
-            const z = -1 - (event.beta - 7.30) / (68.60 - 7.30);  // Moves forward as beta increases
+            const z = -1 - (event.beta - 7.30) / (68.60 - 7.30);
 
             // Calculate scale to make the ring appear smaller as it moves further
-            const scale = 1 - (event.beta - 7.30) / (68.60 - 7.30) * 0.5;  // Shrinks the ring
+            const scale = 1 - (event.beta - 7.30) / (68.60 - 7.30) * 0.5;
 
             // Update ring's position and scale
             ring.setAttribute('position', `${x} ${y} ${z}`);
             ring.setAttribute('scale', `${scale} ${scale} ${scale}`);
         }
+
 
 
         function requestOrientationPermission() {
