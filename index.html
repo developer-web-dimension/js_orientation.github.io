@@ -126,29 +126,27 @@
         // }
 
         function dropBox(event) {
-            // Get the current position and scale of the ring
-            const ringPosition = ring.getAttribute('position');
-            const ringScale = ring.getAttribute('scale');
+    // Get the current position of the ring in world coordinates
+    const ringPosition = ring.getAttribute('position');
+    
+    // Create a new cube (a-box) and set its position to the ring's position
+    const box = document.createElement('a-box');
+    box.setAttribute('position', ringPosition);
 
-            // Create a new cube (a-box)
-            const box = document.createElement('a-box');
+    // Make the box smaller
+    box.setAttribute('scale', '0.05 0.05 0.05');  // Set a smaller size for the box
 
-            // Set the position of the cube to match the ring's position
-            box.setAttribute('position', ringPosition);
+    // Set the color of the cube
+    
+    box.setAttribute('material', 'src: #boxImage');
+    // Append the cube to the scene so it stays anchored in world space
+    scene.appendChild(box);
 
-            // Set the scale of the cube to match the ring's size
-            box.setAttribute('scale', ringScale);
+    // Keep track of the box count for unique IDs
+    boxCount++;
+    box.setAttribute('id', `box-${boxCount}`);
+}
 
-            // Set the color of the cube
-            box.setAttribute('color', `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`);
-
-            // Append the cube to the scene
-            scene.appendChild(box);
-
-            // Keep track of the cube count for unique IDs
-            boxCount++;
-            box.setAttribute('id', `box-${boxCount}`);
-        }
 
         scene.addEventListener('click', dropBox);
         requestOrientationPermission();
