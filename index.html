@@ -61,30 +61,6 @@
         const scene = document.querySelector('a-scene');
         let boxCount = 0;
 
-        // function updateOrientation(event) {
-        //     const alpha = event.alpha ? event.alpha.toFixed(2) : '0';
-        //     const beta = event.beta ? event.beta.toFixed(2) : '0';
-        //     const gamma = event.gamma ? event.gamma.toFixed(2) : '0';
-            
-        //     alphaDisplay.textContent = alpha;
-        //     betaDisplay.textContent = beta;
-        //     gammaDisplay.textContent = gamma;
-
-        //     // Calculate ring position based on orientation
-        //     const x = event.gamma ? (event.gamma / 90) * 0.5 : 0;
-        //     const y = event.beta ? (-event.beta / 90) * 0.5 : 0;
-
-        //     // Map beta (7.30 to 68.60) to a forward movement in z-axis
-        //     const z = -1 - (event.beta - 7.30) / (68.60 - 7.30);  // Moves forward as beta increases
-
-        //     // Calculate scale to make the ring appear smaller as it moves further
-        //     const scale = 1 - (event.beta - 7.30) / (68.60 - 7.30) * 0.5;  // Shrinks the ring
-
-        //     // Update ring's position and scale
-        //     ring.setAttribute('position', `${x} ${y} ${z}`);
-        //     ring.setAttribute('scale', `${scale} ${scale} ${scale}`);
-        // }
-
         function updateOrientation(event) {
             const alpha = event.alpha ? event.alpha.toFixed(2) : '0';
             const beta = event.beta ? event.beta.toFixed(2) : '0';
@@ -137,14 +113,39 @@
             }
         }
 
+        // function dropBox(event) {
+        //     const ringPosition = ring.getAttribute('position');
+        //     const box = document.createElement('a-box');
+        //     box.setAttribute('position', ringPosition);
+        //     box.setAttribute('color', `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`);
+        //     box.setAttribute('scale', '0.1 0.1 0.1');
+        //     box.setAttribute('material', 'src: #boxImage');
+        //     scene.appendChild(box);
+        //     boxCount++;
+        //     box.setAttribute('id', `box-${boxCount}`);
+        // }
+
         function dropBox(event) {
+            // Get the current position and scale of the ring
             const ringPosition = ring.getAttribute('position');
+            const ringScale = ring.getAttribute('scale');
+
+            // Create a new cube (a-box)
             const box = document.createElement('a-box');
+
+            // Set the position of the cube to match the ring's position
             box.setAttribute('position', ringPosition);
-            box.setAttribute('color', `rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`);
-            box.setAttribute('scale', '0.1 0.1 0.1');
-            box.setAttribute('material', 'src: #boxImage');
+
+            // Set the scale of the cube to match the ring's size
+            box.setAttribute('scale', ringScale);
+
+            // Set the color of the cube
+            box.setAttribute('color', `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`);
+
+            // Append the cube to the scene
             scene.appendChild(box);
+
+            // Keep track of the cube count for unique IDs
             boxCount++;
             box.setAttribute('id', `box-${boxCount}`);
         }
